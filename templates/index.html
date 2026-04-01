@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Find My Trial | Clinical Trial Intelligence</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="panel app-header">
+        <div class="app-brand">
+          <img
+            class="brand-logo"
+            src="{{ url_for('static', filename='find-my-trial-logo.jpg') }}"
+            alt="Find My Trial logo"
+          />
+          <div class="brand-copy">
+            <div class="brand-eyebrow">Find My Trial</div>
+            <h1>Find My Trial</h1>
+          </div>
+        </div>
+      </header>
+
+      <section class="panel intro-banner">
+        <p>
+          Over <strong>{{ bootstrap.trial_count }}</strong> indexed clinical trials loaded.
+          Enter patient details to discover personalized matches.
+        </p>
+      </section>
+
+      <section class="workspace-grid">
+        <section class="panel intake-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Patient Input</h2>
+            </div>
+            <button id="load-sample" class="secondary-button" type="button">Load Demo Patient</button>
+          </div>
+
+          <form id="match-form" class="match-form">
+            <label class="field">
+              <span class="field-label">Upload Patient Chart (TXT / JSON / CSV / RTF)</span>
+              <input id="patient-file" type="file" name="patient_file" accept=".txt,.csv,.json,.rtf" />
+            </label>
+
+            <div id="file-name" class="file-name">No file attached</div>
+
+            <label class="field">
+              <span class="field-label">Or Paste Chart Text</span>
+              <textarea
+                id="patient-text"
+                name="patient_text"
+                rows="10"
+                placeholder="Example: 62 y/o female with metastatic HER2-positive breast cancer..."
+              ></textarea>
+            </label>
+
+            <div class="control-grid">
+              <label class="field">
+                <span class="field-label">Search Mode</span>
+                <select id="mode" name="mode">
+                  {% for mode in bootstrap.modes %}
+                  <option value="{{ mode.value }}" {% if mode.value == "balanced" %}selected{% endif %}>
+                    {{ mode.label }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Location (optional)</span>
+                <input id="location" name="location" type="text" placeholder="Detroit, Michigan" />
+              </label>
+
+              <label class="field">
+                <span class="field-label">Top K Results</span>
+                <input id="top-k" name="top_k" type="number" min="1" max="30" value="10" />
+              </label>
+
+              <div class="toggle-group">
+                <label class="toggle">
+                  <input id="active-only" name="active_only" type="checkbox" checked />
+                  <span>Recruiting / active only</span>
+                </label>
+                <label class="toggle">
+                  <input id="interventional-only" name="interventional_only" type="checkbox" checked />
+                  <span>Interventional only</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button id="submit-button" class="primary-button" type="submit">Find Matching Trials</button>
+              <div id="status-text" class="status-text">Ready to parse and rank.</div>
+            </div>
+          </form>
+        </section>
+
+        <aside class="panel summary-panel">
+          <div class="panel-heading panel-heading-tight">
+            <div>
+              <h2>Patient Summary</h2>
+            </div>
+          </div>
+
+          <div id="patient-summary" class="summary-card empty-card">
+            Run a search to generate a patient synopsis, extracted disease markers, therapies, and fit context.
+          </div>
+
+          <div class="signal-grid">
+            <article class="signal-card">
+              <h3>Diagnoses</h3>
+              <div id="diagnosis-signals" class="chip-cloud muted-cloud">No patient parsed yet.</div>
+            </article>
+            <article class="signal-card">
+              <h3>Biomarkers</h3>
+              <div id="biomarker-signals" class="chip-cloud muted-cloud">No biomarker signal yet.</div>
+            </article>
+            <article class="signal-card">
+              <h3>Therapies</h3>
+              <div id="therapy-signals" class="chip-cloud muted-cloud">No therapy history yet.</div>
+            </article>
+            <article class="signal-card">
+              <h3>Clinical Context</h3>
+              <div id="context-signals" class="chip-cloud muted-cloud">Awaiting chart extraction.</div>
+            </article>
+          </div>
+
+          <div class="summary-note">
+            Current dataset includes a <strong>{{ bootstrap.trial_count }}</strong>-trial ClinicalTrials.gov sample with
+            hybrid ranking and explainable match rationale.
+          </div>
+        </aside>
+      </section>
+
+      <section class="panel results-panel">
+        <div class="panel-heading">
+          <div>
+            <h2 id="results-title">Top Trial Matches</h2>
+          </div>
+          <div id="results-meta" class="results-meta">
+            Matching will surface the best-fitting studies from the indexed sample.
+          </div>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+          <div class="empty-title">No search yet</div>
+          <p>
+            Load the sample patient or paste a chart to see extracted clinical signals, ranked trials, and an
+            explanation of why each match surfaced.
+          </p>
+        </div>
+
+        <div id="results-grid" class="results-grid"></div>
+      </section>
+
+      <footer class="footnote">
+        This is a ranking workspace, not a final eligibility decision. Inclusion and exclusion criteria still require
+        manual review.
+      </footer>
+    </div>
+
+    <script id="bootstrap-data" type="application/json">{{ bootstrap|tojson }}</script>
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+  </body>
+</html>
